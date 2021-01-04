@@ -166,7 +166,7 @@ public:
 };
 
 void SOE::sym(Element* e, int numOfElem, int numOfNodes, int numOfIntegralPoints, double alfa, double t_inf, double deltaTau,double maxT) {
-	std::cout << "t0: "; t_Print(numOfNodes);
+	std::cout << "t begin: "; t_Print(numOfNodes);
 	for (int i = 0; i < maxT / deltaTau; ++i) {
 		genHCP_global(e, numOfElem, numOfNodes, numOfIntegralPoints, alfa, t_inf,deltaTau);
 		t = resolveSOEJacobi(H_global, P_global, numOfNodes);
@@ -270,7 +270,7 @@ void SOE::modify(Element *E,double deltaTau, int numOfElem, int numOfNodes) {
 	//new C global times t0
 	std::cout << std::endl << std::endl;
 	for (int i = 0; i < numOfNodes; ++i) {
-		for (int j = 0; j < numOfElem; ++j) {
+		for (int j = 0; j < numOfNodes; ++j) {
 			tmp[i] -= C_global[i][j] * t[j];		
 		}
 	}

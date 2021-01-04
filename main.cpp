@@ -43,7 +43,14 @@ int main() {
 
 	std::cout << "nodes: " << std::endl;
 	for (int i = 0; i < gD->getNN(); ++i) {
-		std::cout << n[i].getX() << " , " << n[i].getY() << std::endl;
+		std::cout << n[i].getX() << " , " << n[i].getY() << " , " << n[i].getBC() << std::endl;
+	}
+
+	std::cout << "BC" << std::endl;
+	for (int i = 0; i < gD->getNE(); ++i) {
+		std::cout << e[i].getId(0)->getBC() << "\t" << e[i].getId(1)->getBC() << "\t" << e[i].getId(2)->getBC() << "\t" << e[i].getId(3)->getBC() << "\t" << std::endl;
+		std::cout << "temperatura: " << e[i].getId(0)->getT() << "\t" << e[i].getId(1)->getT() << "\t" << e[i].getId(2)->getT() << "\t" << e[i].getId(3)->getT() << "\t" << std::endl << std::endl;
+
 	}
 	
 
@@ -100,7 +107,7 @@ int main() {
 	SOE* soe = new SOE(gD->getNN());
 	//sets starting temp info
 	soe->setT(n, gD->getNN());
-	soe->sym(e, gD->getNE(), gD->getNN(), 3, gD->getAlfa(), gD->getT_inf(), gD->getDeltaTau(), 500);
+	soe->sym(e, gD->getNE(), gD->getNN(), 3, gD->getAlfa(), gD->getT_inf(), gD->getDeltaTau(), 5000);
 	
 	/*soe->genHCP_global(e, gD->getNE(),gD->getNN(),2, gD->getAlfa(), gD->getT_inf(),gD->getDeltaTau());
 	soe->H_Print(gD->getNN());
@@ -110,12 +117,17 @@ int main() {
 	soe->H_Print(gD->getNN());
 	soe->C_Print(gD->getNN());
 	//test macierzy hbc
-	/*
+	
 	ElemUniwersal4_2point* elemUniwersal2 = new ElemUniwersal4_2point();
 	ElemUniwersal4_3point* elemUniwersal3 = new ElemUniwersal4_3point();
 
 	//lewa
-	elemUniwersal2->genH_BC(0, 0, 1, 0.03333, 0, 0, 0.03333, 0.03333, 0, 0, 0.033333, 1);
+	elemUniwersal2->genH_BC(
+		0, 0, 1,
+		0.03333, 0, 1,
+		0.03333, 0.03333, 1,
+		0, 0.033333, 0
+);
 	elemUniwersal2->H_BCPrint();
 	elemUniwersal3->genH_BC(0, 0, 1, 0.03333, 0, 0, 0.03333, 0.03333, 0, 0, 0.033333, 1);
 	elemUniwersal3->H_BCPrint();

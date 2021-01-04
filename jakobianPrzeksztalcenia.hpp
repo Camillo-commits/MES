@@ -53,6 +53,9 @@ private:
 	double t_inf = 1200;
 	double deltaTau = 50;
 
+	void genJ(double* xArr, double* yArr);
+	void genRevJ();
+	void gen_dn_dxy(double revJ[2][2], double tmp[2][4], double dn_dxy[2][4]);
 public:
 	void genJacobians(double x1, double y1, double x2, double y2, double x3, double y3, double x4, double y4);
 	void jClear(int numOfJ);
@@ -189,7 +192,7 @@ void ElemUniwersal4_2point::genP(double x1, double y1, int BC1, double x2, doubl
 void ElemUniwersal4_2point::H_BCTimesAlfa() {
 	for (int i = 0; i < 4; ++i) {
 		for (int j = 0; j < 4; ++j) {
-			H_BC[i][j] *= alfa;
+			H_BC[i][j] *= 25;//alfa;
 		}
 	}
 }
@@ -247,70 +250,125 @@ void ElemUniwersal4_2point::genH_BC(double x1, double y1, int BC1, double x2, do
 	double N1, N2;
 	N1 = (1 - E[0]) / 2;
 	N2 = (1 + E[0]) / 2;
+	double tmp1[2][2], tmp2[2][2], tmp3[2][2], tmp4[2][2];
+	for (int i = 0; i < 2; ++i) {
+		for (int j = 0; j < 2; ++j) {
+			tmp1[i][j] = 0;
+			tmp2[i][j] = 0;
+			tmp3[i][j] = 0;
+			tmp4[i][j] = 0;
+		}
+	}
 	//dolny bok
 	if (BC1 == 1 && BC2 == 1) {
 		L = (x2 - x1) / 2;
-		H_BC[0][0] += N1 * N1;
-		H_BC[0][1] += N1 * N2;
-		H_BC[1][0] += N1 * N2;
-		H_BC[1][1] += N2 * N2;
+		tmp1[0][0] += N1 * N1;
+		tmp1[0][1] += N1 * N2;
+		tmp1[1][0] += N1 * N2;
+		tmp1[1][1] += N2 * N2;
 
 		N1 = (1 - E[1]) / 2;
 		N2 = (1 + E[1]) / 2;
-		H_BC[0][0] += N1 * N1;
-		H_BC[0][1] += N1 * N2;
-		H_BC[1][0] += N1 * N2;
-		H_BC[1][1] += N2 * N2;
-		H_BCTimesDet(0, L);
+		tmp1[0][0] += N1 * N1;
+		tmp1[0][1] += N1 * N2;
+		tmp1[1][0] += N1 * N2;
+		tmp1[1][1] += N2 * N2;
+		
+		tmp1[0][0] *= L;
+		tmp1[0][1] *= L;
+		tmp1[1][0] *= L;
+		tmp1[1][1] *= L;
+		//H_BCTimesDet(0, L);
 	}
 	//prawy bok
 	if (BC2 == 1 && BC3 == 1) {
+		N1 = (1 - E[0]) / 2;
+		N2 = (1 + E[0]) / 2;
 		L = (y3 - y2) / 2;
-		H_BC[1][1] += N1 * N1;
-		H_BC[1][2] += N1 * N2;
-		H_BC[2][1] += N1 * N2;
-		H_BC[2][2] += N2 * N2;
+		tmp2[0][0] += N1 * N1;
+		tmp2[0][1] += N1 * N2;
+		tmp2[1][0] += N1 * N2;
+		tmp2[1][1] += N2 * N2;
 
 		N1 = (1 - E[1]) / 2;
 		N2 = (1 + E[1]) / 2;
-		H_BC[1][1] += N1 * N1;
-		H_BC[1][2] += N1 * N2;
-		H_BC[2][1] += N1 * N2;
-		H_BC[2][2] += N2 * N2;
-		H_BCTimesDet(1, L);
+		tmp2[0][0] += N1 * N1;
+		tmp2[0][1] += N1 * N2;
+		tmp2[1][0] += N1 * N2;
+		tmp2[1][1] += N2 * N2;
+		
+		tmp2[0][0] *= L;
+		tmp2[0][1] *= L; 
+		tmp2[1][0] *= L;
+		tmp2[1][1] *= L;
+		//H_BCTimesDet(1, L);
 	}
 	//gorny bok
 	if (BC3 == 1 && BC4 == 1) {
+		N1 = (1 - E[0]) / 2;
+		N2 = (1 + E[0]) / 2;
 		L = (x3 - x4) / 2;
-		H_BC[2][2] += N1 * N1;
-		H_BC[2][3] += N1 * N2;
-		H_BC[3][2] += N1 * N2;
-		H_BC[3][3] += N2 * N2;
+		tmp3[0][0] += N1 * N1;
+		tmp3[0][1] += N1 * N2;
+		tmp3[1][0] += N1 * N2;
+		tmp3[1][1] += N2 * N2;
 	
 		N1 = (1 - E[1]) / 2;
 		N2 = (1 + E[1]) / 2;
-		H_BC[2][2] += N1 * N1;
-		H_BC[2][3] += N1 * N2;
-		H_BC[3][2] += N1 * N2;
-		H_BC[3][3] += N2 * N2;
-		H_BCTimesDet(2, L);
+		tmp3[0][0] += N1 * N1;
+		tmp3[0][1] += N1 * N2;
+		tmp3[1][0] += N1 * N2;
+		tmp3[1][1] += N2 * N2;
+		
+		tmp3[0][0] *= L;
+		tmp3[0][1] *= L;
+		tmp3[1][0] *= L;
+		tmp3[1][1] *= L;
+		//H_BCTimesDet(2, L);
 	}
 	//lewy bok
 	if (BC4 == 1 && BC1 == 1) {
+		N1 = (1 - E[0]) / 2;
+		N2 = (1 + E[0]) / 2;
 		L = (y4 - y1) / 2;
-		H_BC[0][0] += N1 * N1;
-		H_BC[0][3] += N1 * N2;
-		H_BC[3][0] += N1 * N2;
-		H_BC[3][3] += N2 * N2;
+		tmp4[0][0] += N1 * N1;
+		tmp4[0][1] += N1 * N2;
+		tmp4[1][0] += N1 * N2;
+		tmp4[1][1] += N2 * N2;
 
 		N1 = (1 - E[1]) / 2;
 		N2 = (1 + E[1]) / 2;
-		H_BC[0][0] += N1 * N1;
-		H_BC[0][3] += N1 * N2;
-		H_BC[3][0] += N1 * N2;
-		H_BC[3][3] += N2 * N2;
-		H_BCTimesDet(3, L);
+		tmp4[0][0] += N1 * N1;
+		tmp4[0][1] += N1 * N2;
+		tmp4[1][0] += N1 * N2;
+		tmp4[1][1] += N2 * N2;
+		
+		tmp4[0][0] *= L;
+		tmp4[0][1] *= L;
+		tmp4[1][0] *= L;
+		tmp4[1][1] *= L;
+		//H_BCTimesDet(3, L);
 	}
+
+	H_BC[0][0] += tmp1[0][0];
+	H_BC[0][1] += tmp1[0][1];
+	H_BC[1][0] += tmp1[1][0];
+	H_BC[1][1] += tmp1[1][1];
+
+	H_BC[1][1] += tmp2[0][0];
+	H_BC[1][2] += tmp2[0][1];
+	H_BC[2][1] += tmp2[1][0];
+	H_BC[2][2] += tmp2[1][1];
+
+	H_BC[2][2] += tmp3[0][0];
+	H_BC[2][3] += tmp3[0][1];
+	H_BC[3][2] += tmp3[1][0];
+	H_BC[3][3] += tmp3[1][1];
+
+	H_BC[0][0] += tmp4[0][0];
+	H_BC[0][3] += tmp4[0][1];
+	H_BC[3][0] += tmp4[1][0];
+	H_BC[3][3] += tmp4[1][1];
 
 	H_BCTimesAlfa();
 }
@@ -664,6 +722,110 @@ void ElemUniwersal4_2point::derv_dN_dnPrint() {
 	}
 }
 
+void ElemUniwersal4_2point::genJ(double* xArr, double* yArr) {
+	for (int i = 0; i < 4; ++i) {
+		//	dX/dE
+		J1[0][0] += derv_dN_dE[i][0] * xArr[i];
+		//	dY/dE
+		J1[1][0] += derv_dN_dE[i][0] * yArr[i];
+		//	dX/dn
+		J1[0][1] += derv_dN_dn[i][0] * xArr[i];
+		//	dY/dn
+		J1[1][1] += derv_dN_dn[i][0] * yArr[i];
+	
+	/////
+	//J2
+	
+		//	dX/dE
+		J2[0][0] += derv_dN_dE[i][1] * xArr[i];
+		//	dY/dE
+		J2[1][0] += derv_dN_dE[i][1] * yArr[i];
+		//	dX/dn
+		J2[0][1] += derv_dN_dn[i][1] * xArr[i];
+		//	dY/dn
+		J2[1][1] += derv_dN_dn[i][1] * yArr[i];
+	
+	/////
+	//J3
+
+		//	dX/dE
+		J3[0][0] += derv_dN_dE[i][2] * xArr[i];
+		//	dY/dE
+		J3[1][0] += derv_dN_dE[i][2] * yArr[i];
+		//	dX/dn
+		J3[0][1] += derv_dN_dn[i][2] * xArr[i];
+		//	dY/dn
+		J3[1][1] += derv_dN_dn[i][2] * yArr[i];
+	
+	/////
+	//J2
+
+		//	dX/dE
+		J4[0][0] += derv_dN_dE[i][3] * xArr[i];
+		//	dY/dE
+		J4[1][0] += derv_dN_dE[i][3] * yArr[i];
+		//	dX/dn
+		J4[0][1] += derv_dN_dn[i][3] * xArr[i];
+		//	dY/dn
+		J4[1][1] += derv_dN_dn[i][3] * yArr[i];
+	}
+}
+
+void ElemUniwersal4_2point::genRevJ() {
+		detJ1 = (J1[0][0] * J1[1][1]) - (J1[0][1] * J1[1][0]);
+		revJ1[0][0] = J1[1][1] * (1 / detJ1);
+		revJ1[1][0] = -J1[1][0] * (1 / detJ1);
+		revJ1[0][1] = -J1[0][1] * (1 / detJ1);
+		revJ1[1][1] = J1[0][0] * (1 / detJ1);
+	
+	
+		detJ2 = (J2[0][0] * J2[1][1]) - (J2[0][1] * J2[1][0]);
+		revJ2[0][0] = J2[1][1] * (1 / detJ2);
+		revJ2[1][0] = -J2[1][0] * (1 / detJ2);
+		revJ2[0][1] = -J2[0][1] * (1 / detJ2);
+		revJ2[1][1] = J2[0][0] * (1 / detJ2);
+	
+	
+		detJ3 = (J3[0][0] * J3[1][1]) - (J3[0][1] * J3[1][0]);
+		revJ3[0][0] = J3[1][1] * (1 / detJ3);
+		revJ3[1][0] = -J3[1][0] * (1 / detJ3);
+		revJ3[0][1] = -J3[0][1] * (1 / detJ3);
+		revJ3[1][1] = J3[0][0] * (1 / detJ3);
+	
+	
+		detJ4 = (J4[0][0] * J4[1][1]) - (J4[0][1] * J4[1][0]);
+		revJ4[0][0] = J4[1][1] * (1 / detJ4);
+		revJ4[1][0] = -J4[1][0] * (1 / detJ4);
+		revJ4[0][1] = -J4[0][1] * (1 / detJ4);
+		revJ4[1][1] = J4[0][0] * (1 / detJ4);			
+}
+
+void ElemUniwersal4_2point::gen_dn_dxy(double revJ[2][2], double tmp[2][4], double dn_dxy[2][4]) {
+	int j = 0;
+	int k = 0;
+	float float_tmp = 0;
+
+	//wymnozenie jednego wiersza
+	for (int y = 0; y < 2; ++y) {
+		for (int x = 0; x < 4; ++x) {
+			//obliczenie pojedynczej komorki C
+			for (int l = 0, i = 0; l < 2; ++l) {
+				//std::cout << "macierz A : " << j << " " << i  << " wartosc: " << A[j][i] << std::endl;
+				//std::cout << "macierz B : " << l << " " << k << " wartosc: " << B[l][k] << std::endl;
+
+				float_tmp += revJ[j][i] * tmp[l][k];
+				//std::cout << "float_tmp: " << float_tmp << std::endl << std::endl;
+				++i;
+			}
+			dn_dxy[j][k] = float_tmp;
+			++k;
+			float_tmp = 0;
+		}
+		k = 0;
+		++j;
+	}
+}
+
 void ElemUniwersal4_2point::genJacobians(double x1, double y1, double x2, double y2, double x3, double y3, double x4, double y4) {
 	double xArr[4] = { x1,x2,x3,x4 };
 	double yArr[4] = { y1,y2,y3,y4 };
@@ -680,214 +842,44 @@ void ElemUniwersal4_2point::genJacobians(double x1, double y1, double x2, double
 		derv_dN_dn[2][i] = 0.25 * (1 + E[i]);
 		derv_dN_dn[3][i] = 0.25 * (1 - E[i]);
 	}
-	//J1
+	//J
 	jClear(1);
-
-	for (int i = 0; i < 4; ++i) {
-		//	dX/dE
-		J1[0][0] += derv_dN_dE[i][0] * xArr[i];
-		//	dY/dE
-		J1[1][0] += derv_dN_dE[i][0] * yArr[i];
-		//	dX/dn
-		J1[0][1] += derv_dN_dn[i][0] * xArr[i];
-		//	dY/dn
-		J1[1][1] += derv_dN_dn[i][0] * yArr[i];
-	}
-	/////
-	//J2
 	jClear(2);
-
-	for (int i = 0; i < 4; ++i) {
-		//	dX/dE
-		J2[0][0] += derv_dN_dE[i][1] * xArr[i];
-		//	dY/dE
-		J2[1][0] += derv_dN_dE[i][1] * yArr[i];
-		//	dX/dn
-		J2[0][1] += derv_dN_dn[i][1] * xArr[i];
-		//	dY/dn
-		J2[1][1] += derv_dN_dn[i][1] * yArr[i];
-	}
-	/////
-	//J3
 	jClear(3);
-
-	for (int i = 0; i < 4; ++i) {
-		//	dX/dE
-		J3[0][0] += derv_dN_dE[i][2] * xArr[i];
-		//	dY/dE
-		J3[1][0] += derv_dN_dE[i][2] * yArr[i];
-		//	dX/dn
-		J3[0][1] += derv_dN_dn[i][2] * xArr[i];
-		//	dY/dn
-		J3[1][1] += derv_dN_dn[i][2] * yArr[i];
-	}
-	/////
-	//J2
 	jClear(4);
-
-	for (int i = 0; i < 4; ++i) {
-		//	dX/dE
-		J4[0][0] += derv_dN_dE[i][3] * xArr[i];
-		//	dY/dE
-		J4[1][0] += derv_dN_dE[i][3] * yArr[i];
-		//	dX/dn
-		J4[0][1] += derv_dN_dn[i][3] * xArr[i];
-		//	dY/dn
-		J4[1][1] += derv_dN_dn[i][3] * yArr[i];
-	}
-	/////
+	genJ(xArr, yArr);
+	
 	//revJ1
-	detJ1 = (J1[0][0] * J1[1][1]) - (J1[0][1] * J1[1][0]);
-	revJ1[0][0] = J1[1][1] * (1 / detJ1);
-	revJ1[1][0] = -J1[1][0] * (1 / detJ1);
-	revJ1[0][1] = -J1[0][1] * (1 / detJ1);
-	revJ1[1][1] = J1[0][0] * (1 / detJ1);
-	////
-
-	//revJ2
-	detJ2 = (J2[0][0] * J2[1][1]) - (J2[0][1] * J2[1][0]);
-	revJ2[0][0] = J2[1][1] * (1 / detJ2);
-	revJ2[1][0] = -J2[1][0] * (1 / detJ2);
-	revJ2[0][1] = -J2[0][1] * (1 / detJ2);
-	revJ2[1][1] = J2[0][0] * (1 / detJ2);
-	////
-
-	//revJ3
-	detJ3 = (J3[0][0] * J3[1][1]) - (J3[0][1] * J3[1][0]);
-	revJ3[0][0] = J3[1][1] * (1 / detJ3);
-	revJ3[1][0] = -J3[1][0] * (1 / detJ3);
-	revJ3[0][1] = -J3[0][1] * (1 / detJ3);
-	revJ3[1][1] = J3[0][0] * (1 / detJ3);
-	////
-
-	//revJ4
-	detJ4 = (J4[0][0] * J4[1][1]) - (J4[0][1] * J4[1][0]);
-	revJ4[0][0] = J4[1][1] * (1 / detJ4);
-	revJ4[1][0] = -J4[1][0] * (1 / detJ4);
-	revJ4[0][1] = -J4[0][1] * (1 / detJ4);
-	revJ4[1][1] = J4[0][0] * (1 / detJ4);
-	/////
+	genRevJ();
 
 	//dn_dxy_1
 	double tmp[2][4] = {
 		{derv_dN_dE[0][0],derv_dN_dE[1][0],derv_dN_dE[2][0],derv_dN_dE[3][0]},
 		{derv_dN_dn[0][0], derv_dN_dn[1][0],derv_dN_dn[2][0],derv_dN_dn[3][0] }
 	};
+	gen_dn_dxy(revJ1, tmp, dn_dxy_1);
 
-	int j = 0;
-	int k = 0;
-	float float_tmp = 0;
-
-	//wymnozenie jednego wiersza
-	for (int y = 0; y < 2; ++y) {
-		for (int x = 0; x < 4; ++x) {
-			//obliczenie pojedynczej komorki C
-			for (int l = 0, i = 0; l < 2; ++l) {
-				//std::cout << "macierz A : " << j << " " << i  << " wartosc: " << A[j][i] << std::endl;
-				//std::cout << "macierz B : " << l << " " << k << " wartosc: " << B[l][k] << std::endl;
-
-				float_tmp += revJ1[j][i] * tmp[l][k];
-				//std::cout << "float_tmp: " << float_tmp << std::endl << std::endl;
-				++i;
-			}
-			dn_dxy_1[j][k] = float_tmp;
-			++k;
-			float_tmp = 0;
-		}
-		k = 0;
-		++j;
-	}
-
-	
 	//dn_dxy_2
 	double tmp2[2][4] = {
 		{derv_dN_dE[0][1],derv_dN_dE[1][1],derv_dN_dE[2][1],derv_dN_dE[3][1]},
 		{derv_dN_dn[0][1], derv_dN_dn[1][1],derv_dN_dn[2][1],derv_dN_dn[3][1] }
 	};
-
-	float_tmp = 0;
-	j = 0;
-	k = 0;
-	//wymnozenie jednego wiersza
-	for (int y = 0; y < 2; ++y) {
-		for (int x = 0; x < 4; ++x) {
-			//obliczenie pojedynczej komorki C
-			for (int l = 0, i = 0; l < 2; ++l) {
-				//std::cout << "macierz A : " << j << " " << i  << " wartosc: " << A[j][i] << std::endl;
-				//std::cout << "macierz B : " << l << " " << k << " wartosc: " << B[l][k] << std::endl;
-
-				float_tmp += revJ2[j][i] * tmp2[l][k];
-				//std::cout << "float_tmp: " << float_tmp << std::endl << std::endl;
-				++i;
-			}
-			dn_dxy_2[j][k] = float_tmp;
-			++k;
-			float_tmp = 0;
-		}
-		k = 0;
-		++j;
-	}
-
-
+	gen_dn_dxy(revJ2, tmp2, dn_dxy_2);
+	
 	//dn_dxy_3
 	double tmp3[2][4] = {
 		{derv_dN_dE[0][2],derv_dN_dE[1][2],derv_dN_dE[2][2],derv_dN_dE[3][2]},
 		{derv_dN_dn[0][2], derv_dN_dn[1][2],derv_dN_dn[2][2],derv_dN_dn[3][2] }
 	};
-
-	float_tmp = 0;
-	j = 0;
-	k = 0;
-	//wymnozenie jednego wiersza
-	for (int y = 0; y < 2; ++y) {
-		for (int x = 0; x < 4; ++x) {
-			//obliczenie pojedynczej komorki C
-			for (int l = 0, i = 0; l < 2; ++l) {
-				//std::cout << "macierz A : " << j << " " << i  << " wartosc: " << A[j][i] << std::endl;
-				//std::cout << "macierz B : " << l << " " << k << " wartosc: " << B[l][k] << std::endl;
-
-				float_tmp += revJ3[j][i] * tmp3[l][k];
-				//std::cout << "float_tmp: " << float_tmp << std::endl << std::endl;
-				++i;
-			}
-			dn_dxy_3[j][k] = float_tmp;
-			++k;
-			float_tmp = 0;
-		}
-		k = 0;
-		++j;
-	}
-
+	gen_dn_dxy(revJ3, tmp3, dn_dxy_3);
+	
 	//dn_dxy_4
 	double tmp4[2][4] = {
 		{derv_dN_dE[0][3],derv_dN_dE[1][3],derv_dN_dE[2][3],derv_dN_dE[3][3]},
 		{derv_dN_dn[0][3], derv_dN_dn[1][3],derv_dN_dn[2][3],derv_dN_dn[3][3] }
 	};
-
-
-	float_tmp = 0;
-	j = 0;
-	k = 0;
-	//wymnozenie jednego wiersza
-	for (int y = 0; y < 2; ++y) {
-		for (int x = 0; x < 4; ++x) {
-			//obliczenie pojedynczej komorki C
-			for (int l = 0, i = 0; l < 2; ++l) {
-				//std::cout << "macierz A : " << j << " " << i  << " wartosc: " << A[j][i] << std::endl;
-				//std::cout << "macierz B : " << l << " " << k << " wartosc: " << B[l][k] << std::endl;
-
-				float_tmp += revJ4[j][i] * tmp4[l][k];
-				//std::cout << "float_tmp: " << float_tmp << std::endl << std::endl;
-				++i;
-			}
-			dn_dxy_4[j][k] = float_tmp;
-			++k;
-			float_tmp = 0;
-		}
-		k = 0;
-		++j;
-	}
-
+	gen_dn_dxy(revJ4, tmp4, dn_dxy_4);
+	
 	double d1_dx[4][4];
 	double d1_dy[4][4];
 	double tmpX1[4] = { dn_dxy_1[0][0],dn_dxy_1[0][1] ,dn_dxy_1[0][2] ,dn_dxy_1[0][3] };
@@ -938,24 +930,16 @@ void ElemUniwersal4_2point::genJacobians(double x1, double y1, double x2, double
 			d4_dx[j][i] += d4_dy[j][i];
 		}
 	}
-	//mnozenie razy k
+	//mnozenie razy k i det
 	for (int i = 0; i < 4; ++i) {
 		for (int j = 0; j < 4; ++j) {
-			d1_dx[j][i] *= this->k_t;
-			d2_dx[j][i] *= this->k_t;
-			d3_dx[j][i] *= this->k_t;
-			d4_dx[j][i] *= this->k_t;
+			d1_dx[j][i] *= this->k_t * detJ1;
+			d2_dx[j][i] *= this->k_t * detJ2;
+			d3_dx[j][i] *= this->k_t * detJ3;
+			d4_dx[j][i] *= this->k_t * detJ4;
 		}
 	}
-	//* det
-	for (int i = 0; i < 4; ++i) {
-		for (int j = 0; j < 4; ++j) {
-			d1_dx[j][i] *= detJ1;
-			d2_dx[j][i] *= detJ2;
-			d3_dx[j][i] *= detJ3;
-			d4_dx[j][i] *= detJ4;
-		}
-	}
+
 	for (int i = 0; i < 4; ++i) {
 		for (int j = 0; j < 4; ++j) {
 			H[j][i] += d1_dx[j][i]; 
@@ -966,8 +950,5 @@ void ElemUniwersal4_2point::genJacobians(double x1, double y1, double x2, double
 	}
 
 }
-
-
-
 
 #endif // !JAKOBIAN_PRZEKSZTALCENIA
