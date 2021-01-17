@@ -192,7 +192,7 @@ void ElemUniwersal4_2point::genP(double x1, double y1, int BC1, double x2, doubl
 void ElemUniwersal4_2point::H_BCTimesAlfa() {
 	for (int i = 0; i < 4; ++i) {
 		for (int j = 0; j < 4; ++j) {
-			H_BC[i][j] *= 25;//alfa;
+			H_BC[i][j] *= alfa;
 		}
 	}
 }
